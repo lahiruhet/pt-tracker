@@ -18,7 +18,7 @@
       "binding": "DB",
       "database_name": "pt-tracker",
       // Filled in by scripts/setup.mjs after `wrangler d1 create pt-tracker`.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "53700781-9ddf-4c3e-9b21-26d7fe6d4e80",
       "migrations_dir": "migrations"
     }
   ],
