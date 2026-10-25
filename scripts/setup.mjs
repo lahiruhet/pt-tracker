@@ -52,7 +52,8 @@ try {
   const find = () => json(wrangler(["d1", "list", "--json"], { capture: true })).find((d) => d.name === "pt-tracker");
   let db = find();
   if (!db) {
-    wrangler(["d1", "create", "pt-tracker"]);
+    // Point the existing DB binding at the new database, without wrangler's interactive questions.
+    wrangler(["d1", "create", "pt-tracker", "--binding", "DB", "--update-config"]);
     db = find();
   }
   const cfgPath = join(root, "wrangler.jsonc");
