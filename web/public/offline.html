@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>PT Tracker</title>
+    <style>
+      :root { --bg: #faf9f5; --fg: #191918; --fg2: #5e5d59; --accent: #b5553a; --ink: #fff; }
+      @media (prefers-color-scheme: dark) { :root { --bg: #1a1918; --fg: #f2f0e8; --fg2: #b8b5ab; --accent: #d97757; --ink: #1a1918; } }
+      html, body { height: 100%; margin: 0; }
+      body { background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; display: flex; align-items: center; justify-content: center; text-align: center; padding: 32px; box-sizing: border-box; }
+      h1 { font: 500 30px/1.15 Georgia, serif; margin: 24px 0 8px; letter-spacing: -0.02em; }
+      p { color: var(--fg2); margin: 0 0 28px; }
+      button { background: var(--accent); color: var(--ink); border: 0; border-radius: 999px; height: 52px; padding: 0 28px; font: 600 16px system-ui, sans-serif; }
+      img { width: 76px; height: 76px; border-radius: 22px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="icon.svg" alt="" />
+      <h1>No connection</h1>
+      <p>PT Tracker needs signal to open the first time.<br />Your saved changes are safe.</p>
+      <button onclick="location.href='https://pt-tracker.stackmoth.com/'">Try again</button>
+    </main>
+  </body>
+</html>

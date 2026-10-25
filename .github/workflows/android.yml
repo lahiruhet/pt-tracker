@@ -1,0 +1,90 @@
+name: Android APK
+
+# Builds the Android app and attaches the APK to a GitHub Release.
+# Signed release build when the ANDROID_KEYSTORE_* secrets exist (see README → "Android app"),
+# otherwise a debug build (installs fine, but each new debug build needs the old one uninstalled first).
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "android/**"
+      - "capacitor.config.ts"
+      - "web/public/**"
+      - "package.json"
+      - ".github/workflows/android.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      VERSION_CODE: ${{ github.run_number }}
+      VERSION_NAME: 1.0.${{ github.run_number }}
+      HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap sync android
+
+      - name: Restore signing key
+        if: env.HAS_KEYSTORE == 'true'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+
+      - name: Build signed release APK
+        if: env.HAS_KEYSTORE == 'true'
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          ./gradlew --no-daemon assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/pt-tracker-${VERSION_NAME}.apk"
+
+      # Reuse one debug key across runs (while the cache lives) so debug builds install over each other.
+      - name: Keep debug signing key
+        if: env.HAS_KEYSTORE != 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: android-debug-keystore-v1
+
+      - name: Build debug APK
+        if: env.HAS_KEYSTORE != 'true'
+        working-directory: android
+        run: |
+          ./gradlew --no-daemon assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/pt-tracker-${VERSION_NAME}-debug.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pt-tracker-apk
+          path: ${{ runner.temp }}/pt-tracker-*.apk
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${VERSION_NAME}" "$RUNNER_TEMP"/pt-tracker-*.apk \
+            --title "PT Tracker ${VERSION_NAME}" \
+            --notes "Open this page on the phone and tap the .apk file to install. Build ${{ github.sha }}."

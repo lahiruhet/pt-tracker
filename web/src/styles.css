@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+/* Warm, editorial palette: ivory paper, ink, clay accent. Dark mode is its own set, not an inversion. */
+:root {
+  --bg: #faf9f5;
+  --surface: #ffffff;
+  --surface-2: #f0eee6;
+  --surface-3: #e8e5da;
+  --raised: #ffffff;
+  --line: #e5e2d9;
+  --fg: #191918;
+  --fg-2: #5e5d59;
+  --fg-3: #75736b;
+  --accent: #b5553a;
+  --accent-ink: #ffffff;
+  --accent-soft: #f6e4da;
+  --accent-soft-ink: #8f3f22;
+  --chart: #c15f3c;
+  --ok: #4f6b33;
+  --ok-soft: #e4ebd9;
+  --warn: #8a5a12;
+  --warn-soft: #f5e8cf;
+  --bad: #a63d31;
+  --bad-soft: #f7dfda;
+  --scrim: rgb(25 25 24 / 0.38);
+  --shadow: 0 1px 2px rgb(25 25 24 / 0.04), 0 8px 24px rgb(25 25 24 / 0.06);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1918;
+    --surface: #242321;
+    --surface-2: #2e2d2a;
+    --surface-3: #383733;
+    --raised: #4a4844;
+    --line: #3a3936;
+    --fg: #f2f0e8;
+    --fg-2: #b8b5ab;
+    --fg-3: #8a887f;
+    --accent: #d97757;
+    --accent-ink: #1a1918;
+    --accent-soft: #3d2a21;
+    --accent-soft-ink: #f0b49b;
+    --chart: #d4724f;
+    --ok: #a8c08a;
+    --ok-soft: #2b3324;
+    --warn: #e2b766;
+    --warn-soft: #3a3020;
+    --bad: #ee8a7d;
+    --bad-soft: #3e2522;
+    --scrim: rgb(0 0 0 / 0.55);
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.25);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #1a1918;
+  --surface: #242321;
+  --surface-2: #2e2d2a;
+  --surface-3: #383733;
+  --raised: #4a4844;
+  --line: #3a3936;
+  --fg: #f2f0e8;
+  --fg-2: #b8b5ab;
+  --fg-3: #8a887f;
+  --accent: #d97757;
+  --accent-ink: #1a1918;
+  --accent-soft: #3d2a21;
+  --accent-soft-ink: #f0b49b;
+  --chart: #d4724f;
+  --ok: #a8c08a;
+  --ok-soft: #2b3324;
+  --warn: #e2b766;
+  --warn-soft: #3a3020;
+  --bad: #ee8a7d;
+  --bad-soft: #3e2522;
+  --scrim: rgb(0 0 0 / 0.55);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.25);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Newsreader Variable", ui-serif, Georgia, serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-ink: var(--accent-soft-ink);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --shadow-card: var(--shadow);
+}
+
+@layer base {
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+}
+
+/* Safe areas: env() in browsers; the Android shell also injects --safe-area-inset-* (Capacitor SystemBars). */
+:root {
+  --safe-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
+:root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-sheet {
+  animation: sheet-up 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.anim-fade {
+  animation: fade-in 200ms ease-out;
+}
+.anim-rise {
+  animation: rise 240ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-sheet,
+  .anim-fade,
+  .anim-rise {
+    animation: none;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

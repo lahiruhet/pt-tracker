@@ -1,0 +1,39 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pt-tracker",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "pt-tracker.stackmoth.com", "custom_domain": true }],
+  "assets": {
+    "directory": "web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pt-tracker",
+      // Filled in by scripts/setup-cloudflare.sh after `wrangler d1 create pt-tracker`.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Safety net: re-read the whole sheet and retry unsent app edits every 5 minutes.
+  "triggers": { "crons": ["*/5 * * * *"] },
+  "vars": {
+    // Cloudflare Access: team domain (e.g. yourteam.cloudflareaccess.com) and the application's AUD tag.
+    "ACCESS_TEAM_DOMAIN": "",
+    "ACCESS_AUD": ""
+  },
+  // Secrets (set with `wrangler secret put NAME`; this repo is public, so nothing personal lives here):
+  //   SHEET_SCRIPT_URL  the Apps Script web app /exec URL
+  //   SHEET_SECRET      shared secret, same value as the script's SHARED_SECRET property
+  //   SHEET_URL         link to the Google Sheet (for the "Open sheet" button)
+  //   ALLOWED_EMAILS    comma-separated emails allowed in (on top of the Access policy)
+  //   DISPLAY_NAMES     optional, "email=Name,email=Name" for the greeting
+  "observability": { "enabled": true }
+}
