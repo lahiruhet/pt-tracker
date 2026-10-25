@@ -2,11 +2,11 @@
  * PT Tracker ⇄ Google Sheet sync.
  *
  * Install (once): Extensions → Apps Script in the "PT Client Tracker" sheet, paste this file,
- * set the two Script properties below, run setup(), then Deploy → New deployment → Web app
- * (Execute as: Me, Who has access: Anyone). Full steps: README.md → "Connect the sheet".
+ * run setup(), then Deploy → New deployment → Web app (Execute as: Me, Who has access: Anyone).
+ * Full steps: README.md → "Connect the sheet".
  *
- * Script properties (Project Settings → Script properties):
- *   SHARED_SECRET  long random string, same value as the Worker's SHEET_SECRET secret
+ * setup() creates these Script properties if they're missing (Project Settings → Script properties):
+ *   SHARED_SECRET  random string; the Worker's SHEET_SECRET secret must hold the same value
  *   WORKER_URL     https://pt-tracker.stackmoth.com
  *
  * What it does:
@@ -19,6 +19,7 @@
 var TRACKED_TABS = ['Clients', 'Session Log', 'Strength Log'];
 var ID_HEADER = '_id';
 var UPDATED_HEADER = '_updated';
+var DEFAULT_WORKER_URL = 'https://pt-tracker.stackmoth.com';
 
 // ---------------------------------------------------------------------------
 // Setup
@@ -27,8 +28,10 @@ var UPDATED_HEADER = '_updated';
 function setup() {
   var props = PropertiesService.getScriptProperties();
   if (!props.getProperty('SHARED_SECRET')) {
-    throw new Error('Set SHARED_SECRET in Project Settings → Script properties, then run setup() again.');
+    props.setProperty('SHARED_SECRET', Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, ''));
   }
+  if (!props.getProperty('WORKER_URL')) props.setProperty('WORKER_URL', DEFAULT_WORKER_URL);
+
   var ss = SpreadsheetApp.getActive();
   TRACKED_TABS.forEach(function (name) {
     var sh = ss.getSheetByName(name);
@@ -45,7 +48,13 @@ function setup() {
   });
   ScriptApp.newTrigger('onSheetEdit').forSpreadsheet(ss).onEdit().create();
   ScriptApp.newTrigger('onSheetChange').forSpreadsheet(ss).onChange().create();
-  Logger.log('Setup done. Now deploy as a web app (Deploy → New deployment → Web app).');
+  Logger.log('Setup done. Next: Deploy → New deployment → Web app (Execute as: Me, Who has access: Anyone).');
+  showSecret();
+}
+
+/** Prints the shared secret to paste into the Worker (npx wrangler secret put SHEET_SECRET). */
+function showSecret() {
+  Logger.log('SHEET_SECRET for the Worker: ' + PropertiesService.getScriptProperties().getProperty('SHARED_SECRET'));
 }
 
 /** Run from the editor to check the Worker connection. */

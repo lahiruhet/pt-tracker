@@ -14,4 +14,3 @@ android/app/src/main/assets/capacitor.plugins.json
 android/capacitor-cordova-android-plugins/
 .DS_Store
 mock/state.json
-.sheet-secret

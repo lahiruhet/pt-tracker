@@ -17,23 +17,20 @@
     {
       "binding": "DB",
       "database_name": "pt-tracker",
-      // Filled in by scripts/setup-cloudflare.sh after `wrangler d1 create pt-tracker`.
+      // Filled in by scripts/setup.mjs after `wrangler d1 create pt-tracker`.
       "database_id": "00000000-0000-0000-0000-000000000000",
       "migrations_dir": "migrations"
     }
   ],
   // Safety net: re-read the whole sheet and retry unsent app edits every 5 minutes.
   "triggers": { "crons": ["*/5 * * * *"] },
-  "vars": {
-    // Cloudflare Access: team domain (e.g. yourteam.cloudflareaccess.com) and the application's AUD tag.
-    "ACCESS_TEAM_DOMAIN": "",
-    "ACCESS_AUD": ""
-  },
-  // Secrets (set with `wrangler secret put NAME`; this repo is public, so nothing personal lives here):
-  //   SHEET_SCRIPT_URL  the Apps Script web app /exec URL
-  //   SHEET_SECRET      shared secret, same value as the script's SHARED_SECRET property
-  //   SHEET_URL         link to the Google Sheet (for the "Open sheet" button)
-  //   ALLOWED_EMAILS    comma-separated emails allowed in (on top of the Access policy)
-  //   DISPLAY_NAMES     optional, "email=Name,email=Name" for the greeting
+  // Settings live in Worker secrets (this repo is public). `node scripts/setup.mjs` sets them:
+  //   SHEET_SCRIPT_URL    the Apps Script web app /exec URL
+  //   SHEET_SECRET        same value as the script's SHARED_SECRET property (setup() logs it)
+  //   ACCESS_TEAM_DOMAIN  e.g. yourteam.cloudflareaccess.com
+  //   ACCESS_AUD          the Access application's AUD tag
+  //   ALLOWED_EMAILS      comma-separated emails allowed in (on top of the Access policy)
+  //   SHEET_URL           link to the Google Sheet (for the "Open sheet" button)
+  //   DISPLAY_NAMES       optional, "email=Name,email=Name" for the greeting
   "observability": { "enabled": true }
 }

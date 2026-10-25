@@ -25,7 +25,7 @@ A mobile app for a personal trainer's client tracker. The Google Sheet stays the
 | `web/` | The app (React, Tailwind, TanStack Query) |
 | `android/`, `capacitor.config.ts` | Android shell (Capacitor) |
 | `mock/` | Fake sheet + end-to-end sync tests |
-| `scripts/` | Dev stack, screenshots, UI smoke test, Cloudflare setup, signing key |
+| `scripts/` | Cloudflare setup, dev stack, screenshots, UI smoke test, signing key |
 
 ## How sync works
 
@@ -38,30 +38,30 @@ A mobile app for a personal trainer's client tracker. The Google Sheet stays the
 - **Renames:** renaming a client in the app renames them on every log row too.
 - **Offline:** the app keeps the last data on the phone and queues edits made without signal.
 
-## Connect the sheet
+## Set up (once)
 
-1. In the sheet: **Extensions → Apps Script**. Replace the code with `apps-script/Code.gs`. In **Project Settings**, tick *Show "appsscript.json"* and replace it with `apps-script/appsscript.json`.
-2. **Project Settings → Script properties**, add:
-   - `SHARED_SECRET`: the value in `.sheet-secret` (created by `scripts/setup-cloudflare.sh`)
-   - `WORKER_URL`: `https://pt-tracker.stackmoth.com`
-3. Select `setup` in the toolbar and **Run** (approve the permissions). This adds the hidden `_id`/`_updated` columns and installs the triggers.
-4. **Deploy → New deployment → Web app**: *Execute as* **Me**, *Who has access* **Anyone**. Copy the `/exec` URL.
-5. `npx wrangler secret put SHEET_SCRIPT_URL` and paste the URL. Then press **Sync now** in the app's Settings.
+**1. The sheet.** In the Google Sheet: **Extensions → Apps Script**.
 
-The web app URL only accepts requests carrying the shared secret.
+- Replace the code with `apps-script/Code.gs`.
+- In **Project Settings**, tick *Show "appsscript.json" manifest file in editor*, then replace that file with `apps-script/appsscript.json`.
+- Select `setup` in the toolbar and **Run** (approve the permissions). It adds the hidden `_id`/`_updated` columns, installs the triggers, creates the shared secret and prints it in the log as `SHEET_SECRET for the Worker: …`. Run `showSecret` any time to see it again.
+- **Deploy → New deployment → Web app**: *Execute as* **Me**, *Who has access* **Anyone**. Copy the URL ending in `/exec`. It only answers requests that carry the shared secret.
 
-## Deploy (Cloudflare)
-
-Needs `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` and network access to `api.cloudflare.com`.
+**2. Cloudflare**, on a computer with Node 20+ and wrangler logged in (`npx wrangler whoami`):
 
 ```sh
-ALLOWED_EMAILS="first@example.com,second@example.com" \
-SHEET_URL="https://docs.google.com/spreadsheets/d/…/edit" \
-DISPLAY_NAMES="first@example.com=Name,second@example.com=Name" \
-scripts/setup-cloudflare.sh
+git clone https://github.com/lahiruhet/pt-tracker && cd pt-tracker
+npm install
+node scripts/setup.mjs
 ```
 
-It creates the D1 database, runs migrations, sets up Cloudflare Access (email one-time code sign-in, 30-day sessions, only the listed emails, plus a bypass for the sheet hook path), deploys to `pt-tracker.stackmoth.com` and sets the secrets. Later deploys: `npm run deploy`.
+It creates the D1 database, runs the migrations, deploys to `pt-tracker.stackmoth.com`, then asks for the allowed emails, the Cloudflare Access details, the `SHEET_SECRET` and `/exec` URL from step 1, and the sheet link, and saves them as Worker secrets. Leave an answer blank to skip it; re-run the script any time to change settings.
+
+Cloudflare Access: with `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` set (Access edit permissions), the script sets it up itself. Otherwise it lists the dashboard clicks: one-time email code login, an app for the site allowing only your emails with 30-day sessions, and a bypass for `/api/hook` (the sheet's change hook, which the Worker checks with the shared secret).
+
+**3.** Open https://pt-tracker.stackmoth.com, sign in with the emailed code, and press **Sync now** in Settings.
+
+Later deploys: `npm run deploy`.
 
 ## Android app
 
