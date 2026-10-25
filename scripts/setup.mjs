@@ -28,7 +28,8 @@ async function ask(q) {
 const step = (s) => console.log(`\n\x1b[1m→ ${s}\x1b[0m`);
 
 function run(cmd, args, { capture = false, input } = {}) {
-  const res = spawnSync(cmd, args, {
+  // One command string (all arguments here are fixed or quoted by us), so Windows' npx.cmd works.
+  const res = spawnSync([cmd, ...args].join(" "), {
     cwd: root,
     shell: true,
     encoding: "utf8",
@@ -64,7 +65,17 @@ try {
 
   step(`Build and deploy to https://${DOMAIN}`);
   run("npm", ["run", "build"]);
-  wrangler(["deploy"]);
+  try {
+    wrangler(["deploy"]);
+  } catch (err) {
+    console.log(`
+Deploy failed. If the error says [code: 10013] (Cloudflare's generic server error):
+  - open dash.cloudflare.com → Workers & Pages once; a new account asks you to pick a
+    workers.dev subdomain (and to verify your email). Do that, then run this script again.
+  - otherwise check https://www.cloudflarestatus.com, wait a few minutes and run it again.
+If it says the zone or route isn't found: stackmoth.com must be a zone in this same account.`);
+    throw err;
+  }
 
   step("Cloudflare Access (sign-in in front of the site)");
   const secrets = {};
